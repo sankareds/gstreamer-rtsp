@@ -31,7 +31,7 @@ int main()
 
     //rtspsrc location=rtsp://admin:@cam1/ch0_0.264 protocols=tcp ! rtph264depay ! h264parse ! omxh264dec ! nvvidconv ! video/x-raw(memory:NVMM), width=1280, height=720, format=(string)BGRx ! nvvidconv ! appsink
     // rtspsrc location=rtsp://admin:@cam1/ch0_0.264 name=r latency=0 ! application/x-rtp,payload=96,encoding-name=H264 ! rtph264depay ! h264parse ! nvv4l2decoder ! nvvidconv ! video/x-raw, format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink
-    const char* gst =  "rtspsrc location=rtsp://admin:@cam1/ch0_0.264 name=r latency=0 protocols=tcp ! application/x-rtp,payload=96,encoding-name=H264 ! rtph264depay ! h264parse ! nvv4l2decoder ! nvvidconv ! video/x-raw(memory:NVMM), format=BGRx ! nvvidconv ! videoconvert ! video/x-raw, format=BGR ! appsink";
+    const char* gst =  "rtspsrc location=rtsp://admin:@cam1/ch0_0.264 protocols=tcp ! rtph264depay ! h264parse ! omxh264dec ! nvvidconv ! video/x-raw(memory:NVMM), width=1280, height=720, format=(string)RGBA ! nvvidconv ! appsink";
 
     cv::VideoCapture cap(gst, cv::CAP_GSTREAMER);
 
@@ -58,7 +58,7 @@ int main()
     cv::cuda::GpuMat d_frame_out(height, width, CV_8UC3, unified_ptr);
 
     cv::Ptr< cv::cuda::Filter > filter = cv::cuda::createSobelFilter(CV_8UC3, CV_8UC3, 1, 1, 1, 1, cv::BORDER_DEFAULT);
-    cv::Mat frame_in(height, width, CV_8UC4);
+    cv::Mat frame_in;
     while(1)
     {
     	if (!cap.read(frame_in)) {
@@ -66,7 +66,7 @@ int main()
 			break;
     	}else  {
 			std::cout << "Before copy to" << std::endl;
-			//cv::cvtColor(frame_in, frame_in, cv::COLOR_YUV2BGR_NV12);
+			cv::imshow("MyCameraPreview",frame_in);
 			frame_in.copyTo(frame_out);
 			std::cout << "After copy to" << std::endl;
 			filter->apply(d_frame_out, d_frame_out);
